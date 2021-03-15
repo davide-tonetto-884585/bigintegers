@@ -5,8 +5,7 @@ This library allow you to work with very large integer (Max 50000 digits).
 
 The implemented operators are:
 
-Biginteger operator*(const Biginteger& b) const;
-
+    Biginteger operator*(const Biginteger& b) const;
     Biginteger operator+(const Biginteger& b) const;
     Biginteger operator-(const Biginteger& b) const;
     Biginteger operator/(const Biginteger& b) const;
