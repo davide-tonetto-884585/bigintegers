@@ -5,8 +5,8 @@ using std::cout;
 using std::cin;
 using std::endl;
 
-Bigintegers factorial(size_t n) {
-    Bigintegers res{1};
+Biginteger factorial(size_t n) {
+    Biginteger res{1};
 
     while (n > 1) {
         res *= n;
@@ -17,20 +17,33 @@ Bigintegers factorial(size_t n) {
 }
 
 int main() {
+    cout << endl;
 
-    Bigintegers big_int_1{"9871298631784518925481273187263175487254912538179251825385"}, big_int_2{"123123686847553717263815276358172837"}, sum, mult, sub;
+    Biginteger big_int_1{"10"}, big_int_2{"3"}, sum, mult, sub, div, mod;
+
+    sum = -big_int_1++ + --big_int_2;
+
+    cout << string(big_int_1) << " " << string(big_int_2) << " " << string(sum) << endl;
 
     sum = big_int_1 + big_int_2;
     mult = big_int_1 * big_int_2;
     sub = big_int_1 - big_int_2;
+    div = big_int_1 / big_int_2;
+    mod = big_int_1 % big_int_2;
 
     sum.print();
     mult.print();
     sub.print();
+    div.print();
+    mod.print();
+
+    cout << endl;
 
     cout << ((big_int_1 > big_int_2) ? "true" : "false") << endl << endl; 
 
-    factorial(2000).print(); 
+    cout << string(mod) << endl;
+
+    //factorial(2000).print(); 
 
     return 0;
 }

@@ -4,16 +4,18 @@
 #include <bigintegers.hpp>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 using std::cin;
 using std::cout;
 using std::endl;
+using std::pair;
 using std::string;
 using std::stringstream;
 
 const size_t MAX = 50000;
 
-bool Bigintegers::is_valid_string(const string& value) const {
+bool Biginteger::is_valid_string(const string& value) const {
     if (value.length() > MAX)
         return false;
 
@@ -30,20 +32,38 @@ bool Bigintegers::is_valid_string(const string& value) const {
     return true;
 }
 
-inline int Bigintegers::char_to_int(char c) const {
+inline int Biginteger::char_to_int(char c) const {
     return c - '0';
 }
 
-bool Bigintegers::equals(const Bigintegers& a, const Bigintegers& b) const {
+int Biginteger::compare_digit_string(const string& a, const string& b) const {
+    if (a == b) return 0;
+
+    if (a.length() > b.length())
+        return 1;
+    else if (b.length() > a.length())
+        return -1;
+    else
+        return a.compare(b);
+}
+
+bool Biginteger::equals(const Biginteger& a, const Biginteger& b) const {
     return a.value == b.value && a.sign == b.sign;
 }
 
-bool Bigintegers::greater(const Bigintegers& a, const Bigintegers& b) const {
+bool Biginteger::greater(const Biginteger& a, const Biginteger& b) const {
     if (a.sign && !b.sign)
         return true;
 
     if (!a.sign && b.sign)
         return false;
+
+    if (a.value.length() == b.value.length()) {
+        if (a.value.compare(b.value) > 0)
+            return true;
+        else
+            return false;
+    }
 
     if (a.sign) {
         if (a.value.length() > b.value.length())
@@ -56,14 +76,9 @@ bool Bigintegers::greater(const Bigintegers& a, const Bigintegers& b) const {
         else
             return false;
     }
-
-    if (a.value.compare(b.value) > 0)
-        return true;
-    else
-        return false;
 }
 
-string Bigintegers::add(const string& a, const string& b) const {
+string Biginteger::add(const string& a, const string& b) const {
     string res;
     const string &big_string = (a.length() >= b.length()) ? a : b,
                  &small_string = (a.length() >= b.length()) ? b : a;
@@ -91,7 +106,7 @@ string Bigintegers::add(const string& a, const string& b) const {
     return res;
 }
 
-string Bigintegers::multiply(const string& a, const string& b) const {
+string Biginteger::multiply(const string& a, const string& b) const {
     string res = "0";
 
     if (a == "0" || b == "0")
@@ -126,7 +141,7 @@ string Bigintegers::multiply(const string& a, const string& b) const {
     return res;
 }
 
-string Bigintegers::subtract(const string& a, const string& b) const {
+string Biginteger::subtract(const string& a, const string& b) const {
     if (a == b)
         return "0";
 
@@ -156,7 +171,49 @@ string Bigintegers::subtract(const string& a, const string& b) const {
     return res;
 }
 
-Bigintegers::Bigintegers(const string& number) {
+pair<string, string> Biginteger::divide(const string& a, const string& b) const {
+    if (a.length() < b.length() || (a.length() == b.length() && a.compare(b) < 0)) {
+        return {"0", a};
+    }
+
+    if (a == b) {
+        return {"1", "0"};
+    }
+
+    if (b == "1") {
+        return {a, "0"};
+    }
+
+    string div, first_div, resto;
+
+    size_t cont = 0;
+    while (compare_digit_string(first_div, b) < 0) {
+        first_div += a[cont];
+        cont++;
+    }
+
+    for (long long int i = first_div.length() - 1; i < (long long)a.length(); i++) {
+        if (i != (long long)first_div.length() - 1)
+            resto += a[i];
+        else
+            resto = first_div;
+
+        while (resto[0] == '0' && resto.length() != 1)
+            resto.erase(0, 1);
+
+        cont = 0;
+        while (compare_digit_string(resto, b) >= 0) {
+            resto = subtract(resto, b);
+            cont++;
+        }
+
+        div += std::to_string(cont);
+    }
+
+    return {div, subtract(a, multiply(b, div))};
+}
+
+Biginteger::Biginteger(const string& number) {
     if (!is_valid_string(number))
         throw invalid_string{"Error invalid string."};
 
@@ -169,7 +226,7 @@ Bigintegers::Bigintegers(const string& number) {
     }
 }
 
-Bigintegers::Bigintegers(const string& value, bool sign) {
+Biginteger::Biginteger(const string& value, bool sign) {
     if (!is_valid_string(value))
         throw invalid_string{"Error invalid string."};
 
@@ -177,7 +234,7 @@ Bigintegers::Bigintegers(const string& value, bool sign) {
     this->sign = sign;
 }
 
-Bigintegers::Bigintegers(const long long int& number) {
+Biginteger::Biginteger(const long long int& number) {
     stringstream ss;
     string s;
 
@@ -193,27 +250,27 @@ Bigintegers::Bigintegers(const long long int& number) {
     }
 }
 
-string Bigintegers::get_value() const {
+string Biginteger::get_value() const {
     return value;
 }
 
-bool Bigintegers::get_sign() const {
+bool Biginteger::get_sign() const {
     return sign;
 }
 
-void Bigintegers::set_value(const string& value) {
+void Biginteger::set_value(const string& value) {
     if (!is_valid_string(value))
         throw invalid_string{"Error invalid string."};
 
     this->value = value;
 }
 
-void Bigintegers::set_sign(bool sign) {
+void Biginteger::set_sign(bool sign) {
     this->sign = sign;
 }
 
-Bigintegers Bigintegers::operator*(const Bigintegers& b) const {
-    Bigintegers res;
+Biginteger Biginteger::operator*(const Biginteger& b) const {
+    Biginteger res;
 
     res.set_value(multiply(value, b.value));
     res.set_sign(sign == b.sign);
@@ -221,8 +278,8 @@ Bigintegers Bigintegers::operator*(const Bigintegers& b) const {
     return res;
 }
 
-Bigintegers Bigintegers::operator+(const Bigintegers& b) const {
-    Bigintegers res;
+Biginteger Biginteger::operator+(const Biginteger& b) const {
+    Biginteger res;
 
     if (sign && b.sign)
         res.value = add(value, b.value);
@@ -233,8 +290,8 @@ Bigintegers Bigintegers::operator+(const Bigintegers& b) const {
     }
 
     if (sign != b.sign) {
-        const Bigintegers &greater_bigint = absolute() >= b.absolute() ? (*this) : b,
-                          &smaller_bigint = absolute() >= b.absolute() ? b : (*this);
+        const Biginteger &greater_bigint = absolute() >= b.absolute() ? (*this) : b,
+                         &smaller_bigint = absolute() >= b.absolute() ? b : (*this);
 
         res.value = subtract(greater_bigint.value, smaller_bigint.value);
 
@@ -249,59 +306,134 @@ Bigintegers Bigintegers::operator+(const Bigintegers& b) const {
     return res;
 }
 
-Bigintegers Bigintegers::operator-(const Bigintegers& b) const {
-    Bigintegers temp{b.value, b.sign ? false : true};
+Biginteger Biginteger::operator-(const Biginteger& b) const {
+    Biginteger temp{b.value, b.sign ? false : true};
     return (*this) + temp;
 }
 
-void Bigintegers::operator+=(const Bigintegers& b) {
+Biginteger Biginteger::operator/(const Biginteger& b) const {
+    if (b.value == "0")
+        throw std::runtime_error("Math error: Attempted to divide by Zero\n");
+
+    Biginteger res;
+
+    res.value = divide(value, b.value).first;
+    res.sign = (sign == b.sign);
+
+    if (res.value == "0" && !res.sign)
+        res.sign = true;
+
+    return res;
+}
+
+Biginteger Biginteger::operator%(const Biginteger& b) const {
+    if (b.value == "0")
+        throw std::runtime_error("Math error: Attempted to divide by Zero\n");
+
+    Biginteger res;
+
+    res.value = divide(value, b.value).second;
+    res.sign = (sign == b.sign);
+
+    if (res.value == "0" && !res.sign)
+        res.sign = true;
+
+    return res;
+}
+
+Biginteger& Biginteger::operator+=(const Biginteger& b) {
     (*this) = (*this) + b;
+    return (*this);
 }
 
-void Bigintegers::operator-=(const Bigintegers& b) {
+Biginteger& Biginteger::operator-=(const Biginteger& b) {
     (*this) = (*this) - b;
+    return (*this);
 }
 
-void Bigintegers::operator*=(const Bigintegers& b) {
+Biginteger& Biginteger::operator*=(const Biginteger& b) {
     (*this) = (*this) * b;
+    return (*this);
 }
 
-void Bigintegers::operator=(const Bigintegers& b) {
+Biginteger& Biginteger::operator/=(const Biginteger& b) {
+    (*this) = (*this) / b;
+    return (*this);
+}
+
+Biginteger& Biginteger::operator%=(const Biginteger& b) {
+    (*this) = (*this) % b;
+    return (*this);
+}
+
+Biginteger& Biginteger::operator++() {
+    return (*this) += 1;
+}
+
+Biginteger Biginteger::operator++(int) {
+    Biginteger before = (*this);
+
+    (*this) += 1;
+
+    return before;
+}
+
+Biginteger& Biginteger::operator--() {
+    return (*this) -= 1;
+}
+
+Biginteger Biginteger::operator--(int) {
+    Biginteger before = (*this);
+
+    (*this) -= 1;
+
+    return before;
+}
+
+Biginteger Biginteger::operator-() const {
+    return (*this) * -1;
+}
+
+void Biginteger::operator=(const Biginteger& b) {
     value = b.value;
     sign = b.sign;
 }
 
-bool Bigintegers::operator>(const Bigintegers& b) const {
+bool Biginteger::operator>(const Biginteger& b) const {
     return !equals((*this), b) && greater((*this), b);
 }
 
-bool Bigintegers::operator<(const Bigintegers& b) const {
+bool Biginteger::operator<(const Biginteger& b) const {
     return !equals((*this), b) && !greater((*this), b);
 }
 
-bool Bigintegers::operator>=(const Bigintegers& b) const {
+bool Biginteger::operator>=(const Biginteger& b) const {
     return equals((*this), b) || greater((*this), b);
 }
 
-bool Bigintegers::operator<=(const Bigintegers& b) const {
+bool Biginteger::operator<=(const Biginteger& b) const {
     return equals((*this), b) || !greater((*this), b);
 }
 
-bool Bigintegers::operator==(const Bigintegers& b) const {
+bool Biginteger::operator==(const Biginteger& b) const {
     return equals((*this), b) && sign == b.sign;
 }
 
-bool Bigintegers::operator!=(const Bigintegers& b) const {
+bool Biginteger::operator!=(const Biginteger& b) const {
     return !equals((*this), b) || sign != b.sign;
 }
 
-Bigintegers Bigintegers::absolute() const {
-    Bigintegers res{value, true};
+Biginteger::operator string() const {
+    return (sign ? "" : "-") + value;
+}
+
+Biginteger Biginteger::absolute() const {
+    Biginteger res{value, true};
     return res;
 }
 
-void Bigintegers::print() const {
-    cout << (sign ? '+' : '-') << value << endl;
+void Biginteger::print() const {
+    cout << (sign ? "" : "-") << value << endl;
 }
 
 #endif

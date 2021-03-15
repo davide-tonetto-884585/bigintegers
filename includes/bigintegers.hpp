@@ -1,12 +1,13 @@
 #include <string>
 
+using std::pair;
 using std::string;
 
 struct invalid_string {
     string msg;
 };
 
-class Bigintegers {
+class Biginteger {
    private:
     string value;
     bool sign;
@@ -15,9 +16,11 @@ class Bigintegers {
 
     inline int char_to_int(char c) const;
 
-    bool equals(const Bigintegers& a, const Bigintegers& b) const;
+    int compare_digit_string(const string& a, const string& b) const;
 
-    bool greater(const Bigintegers& a, const Bigintegers& b) const;
+    bool equals(const Biginteger& a, const Biginteger& b) const;
+
+    bool greater(const Biginteger& a, const Biginteger& b) const;
 
     string add(const string& a, const string& b) const;
 
@@ -25,14 +28,16 @@ class Bigintegers {
 
     string subtract(const string& a, const string& b) const;
 
+    pair<string, string> divide(const string& a, const string& b) const;
+
    public:
-    Bigintegers() : value{"0"}, sign{true} {}
+    Biginteger() : value{"0"}, sign{true} {}
 
-    Bigintegers(const string& number);
+    Biginteger(const string& number);
 
-    Bigintegers(const string& value, bool sign);
+    Biginteger(const string& value, bool sign);
 
-    Bigintegers(const long long int& number);
+    Biginteger(const long long int& number);
 
     string get_value() const;
 
@@ -42,33 +47,53 @@ class Bigintegers {
 
     void set_sign(bool sign);
 
-    Bigintegers operator*(const Bigintegers& b) const;
+    Biginteger operator*(const Biginteger& b) const;
 
-    Bigintegers operator+(const Bigintegers& b) const;
+    Biginteger operator+(const Biginteger& b) const;
 
-    Bigintegers operator-(const Bigintegers& b) const;
+    Biginteger operator-(const Biginteger& b) const;
 
-    void operator+=(const Bigintegers& b);
+    Biginteger operator/(const Biginteger& b) const;
 
-    void operator-=(const Bigintegers& b);
+    Biginteger operator%(const Biginteger& b) const;
 
-    void operator*=(const Bigintegers& b);
+    Biginteger& operator+=(const Biginteger& b);
 
-    void operator=(const Bigintegers& b);
+    Biginteger& operator-=(const Biginteger& b);
 
-    bool operator>(const Bigintegers& b) const;
+    Biginteger& operator*=(const Biginteger& b);
 
-    bool operator<(const Bigintegers& b) const;
+    Biginteger& operator/=(const Biginteger& b);
 
-    bool operator>=(const Bigintegers& b) const;
+    Biginteger& operator%=(const Biginteger& b);
 
-    bool operator<=(const Bigintegers& b) const;
+    Biginteger& operator++();    // prefix
 
-    bool operator==(const Bigintegers& b) const;
+    Biginteger operator++(int);  // postfix
 
-    bool operator!=(const Bigintegers& b) const;
+    Biginteger& operator--();    // prefix
 
-    Bigintegers absolute() const;
+    Biginteger operator--(int);  // postfix
+
+    Biginteger operator-() const;
+
+    void operator=(const Biginteger& b);
+
+    bool operator>(const Biginteger& b) const;
+
+    bool operator<(const Biginteger& b) const;
+
+    bool operator>=(const Biginteger& b) const;
+
+    bool operator<=(const Biginteger& b) const;
+
+    bool operator==(const Biginteger& b) const;
+
+    bool operator!=(const Biginteger& b) const;
+
+    operator string() const;
+
+    Biginteger absolute() const;
 
     void print() const;
 };
